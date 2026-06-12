@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>The Legend of Success</title>
+
+<style>
+body {
+    margin: 0;
+    background: radial-gradient(#0b132b, #000);
+    font-family: Arial, sans-serif;
+    color: white;
+    overflow: hidden;
+}
+
+#ui {
+    position: fixed;
+    top: 10px;
+    width: 100%;
+    text-align: center;
+    font-size: 22px;
+    color: gold;
+    letter-spacing: 2px;
+}
+
+#arena {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+.character {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+}
+
+#player {
+    background: linear-gradient(green, lime);
+    left: 100px;
+    top: 50%;
+}
+
+#enemy {
+    background: linear-gradient(red, darkred);
+    right: 100px;
+    top: 50%;
+}
+
+.hp-container {
+    position: absolute;
+    width: 80px;
+    height: 10px;
+    background: #222;
+    border: 1px solid #555;
+    top: -15px;
+    left: -10px;
+}
+
+.hp {
+    height: 100%;
+    background: lime;
+}
+
+#enemy .hp {
+    background: red;
+}
+
+#message {
+    position: fixed;
+    bottom: 20px;
+    width: 100%;
+    text-align: center;
+    font-size: 18px;
+    opacity: 0.8;
+}
+</style>
+</head>
+
+<body>
+
+<div id="ui">🔥 THE LEGEND OF SUCCESS 🔥</div>
+
+<div id="arena">
+    <div id="player" class="character">
+        <div class="hp-container"><div id="playerHP" class="hp"></div></div>
+    </div>
+
+    <div id="enemy" class="character">
+        <div class="hp-container"><div id="enemyHP" class="hp"></div></div>
+    </div>
+</div>
+
+<div id="message">Move: WASD | Attack: SPACE | Skill: F</div>
+
+<script>
+let player = {
+    x: 100,
+    y: window.innerHeight / 2,
+    hp: 1000,
+    maxHp: 1000,
+    damage: 120
+};
+
+let enemy = {
+    x: window.innerWidth - 160,
+    y: window.innerHeight / 2,
+    hp: 800,
+    maxHp: 800,
+    damage: 80
+};
+
+let fireballCooldown = 0;
+let gameOver = false;
+
+const playerEl = document.getElementById("player");
+const enemyEl = document.getElementById("enemy");
+
+function updateUI() {
+    playerEl.style.left = player.x + "px";
+    playerEl.style.top = player.y + "px";
+    enemyEl.style.left = enemy.x + "px";
+    enemyEl.style.top = enemy.y + "px";
+
+    document.getElementById("playerHP").style.width =
+        (player.hp / player.maxHp * 100) + "%";
+
+    document.getElementById("enemyHP").style.width =
+        (enemy.hp / enemy.maxHp * 100) + "%";
+}
+
+function distance(a, b) {
+    return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+document.addEventListener("keydown", e => {
+    if (gameOver) return;
+
+    if (e.key === "w") player.y -= 20;
+    if (e.key === "s") player.y += 20;
+    if (e.key === "a") player.x -= 20;
+    if (e.key === "d") player.x += 20;
+
+    if (e.code === "Space" && distance(player, enemy) < 100) {
+        enemy.hp -= player.damage;
+    }
+
+    if (e.key === "f" && fireballCooldown === 0) {
+        enemy.hp -= 200;
+        fireballCooldown = 120;
+        document.getElementById("message").innerText = "🔥 Fireball!";
+    }
+});
+
+function enemyAI() {
+    if (gameOver) return;
+
+    if (enemy.x > player.x) enemy.x -= 1;
+    if (enemy.x < player.x) enemy.x += 1;
+    if (enemy.y > player.y) enemy.y -= 1;
+    if (enemy.y < player.y) enemy.y += 1;
+
+    if (distance(player, enemy) < 80) {
+        player.hp -= enemy.damage * 0.02;
+    }
+}
+
+function gameLoop() {
+    if (fireballCooldown > 0) fireballCooldown--;
+
+    enemyAI();
+    updateUI();
+
+    if (enemy.hp <= 0) {
+        gameOver = true;
+        document.getElementById("message").innerText =
+            "🏆 VICTORY! YOU ARE A TRUE LEGEND OF SUCCESS";
+    }
+
+    if (player.hp <= 0) {
+        gameOver = true;
+        document.getElementById("message").innerText =
+            "💀 DEFEAT! RISE AGAIN, LEGEND";
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+
+updateUI();
+gameLoop();
+</script>
+
+</body>
+</html>
